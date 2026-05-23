@@ -7,12 +7,6 @@
     const navbar = document.getElementById('navbar');
     const hamburger = document.getElementById('hamburger');
     const navLinks = document.getElementById('navLinks');
-    const contactForm = document.getElementById('contactForm');
-
-    // Web3Forms configuration (moved to environment variable concept)
-    // IMPORTANT: In production, consider using a backend proxy or environment variables
-    const FORM_ACCESS_KEY = 'e05b31d5-119d-4999-ad84-2bea8b2927ea';
-    const FORM_REDIRECT_URL = 'https://desoukkkii.github.io/desouki-portfolio/';
 
     // ============================================
     // Utility Functions
@@ -139,149 +133,6 @@
     });
 
     // ============================================
-    // Form Validation
-    // ============================================
-    const validators = {
-        name: (val) => val.trim().length >= 2,
-        email: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim()),
-        message: (val) => val.trim().length >= 10
-    };
-
-    const errorMessages = {
-        name: 'Please enter your name (at least 2 characters).',
-        email: 'Please enter a valid email address.',
-        message: 'Please enter a message (at least 10 characters).'
-    };
-
-    const setError = (inputId, errorId, message) => {
-        const input = document.getElementById(inputId);
-        const error = document.getElementById(errorId);
-        if (input) input.classList.add('error');
-        if (error) error.textContent = message;
-    };
-
-    const clearError = (inputId, errorId) => {
-        const input = document.getElementById(inputId);
-        const error = document.getElementById(errorId);
-        if (input) input.classList.remove('error');
-        if (error) error.textContent = '';
-    };
-
-    const validateField = (fieldName, value) => {
-        const isValid = validators[fieldName] ? validators[fieldName](value) : true;
-        if (!isValid) {
-            setError(fieldName, `${fieldName}Error`, errorMessages[fieldName]);
-        } else {
-            clearError(fieldName, `${fieldName}Error`);
-        }
-        return isValid;
-    };
-
-    // ============================================
-    // Contact Form Submission
-    // ============================================
-    if (contactForm) {
-        const nameInput = document.getElementById('name');
-        const emailInput = document.getElementById('email');
-        const messageInput = document.getElementById('message');
-        const submitBtn = document.getElementById('submitBtn');
-        const btnText = submitBtn?.querySelector('.btn-text');
-        const btnLoading = submitBtn?.querySelector('.btn-loading');
-        const formSuccess = document.getElementById('formSuccess');
-
-        // Real-time validation
-        const setupLiveValidation = (inputId, fieldName) => {
-            const input = document.getElementById(inputId);
-            if (input) {
-                input.addEventListener('input', debounce(() => {
-                    validateField(fieldName, input.value);
-                }, 300));
-            }
-        };
-
-        setupLiveValidation('name', 'name');
-        setupLiveValidation('email', 'email');
-        setupLiveValidation('message', 'message');
-
-        const setLoading = (isLoading) => {
-            if (!submitBtn) return;
-            submitBtn.disabled = isLoading;
-            if (btnText) btnText.style.display = isLoading ? 'none' : '';
-            if (btnLoading) btnLoading.style.display = isLoading ? 'flex' : 'none';
-        };
-
-        const showSuccess = () => {
-            if (contactForm) contactForm.reset();
-            if (submitBtn) submitBtn.style.display = 'none';
-            if (formSuccess) formSuccess.style.display = 'flex';
-            
-            // Reset form visibility after 5 seconds (optional)
-            setTimeout(() => {
-                if (submitBtn) submitBtn.style.display = '';
-                if (formSuccess) formSuccess.style.display = 'none';
-            }, 5000);
-        };
-
-        const showError = (message) => {
-            setError('message', 'messageError', message || 'Something went wrong. Please try again or email directly.');
-            setLoading(false);
-        };
-
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const nameVal = nameInput?.value || '';
-            const emailVal = emailInput?.value || '';
-            const messageVal = messageInput?.value || '';
-
-            // Clear all previous errors
-            ['name', 'email', 'message'].forEach(field => {
-                clearError(field, `${field}Error`);
-            });
-
-            // Validate all fields
-            const isNameValid = validateField('name', nameVal);
-            const isEmailValid = validateField('email', emailVal);
-            const isMessageValid = validateField('message', messageVal);
-
-            if (!isNameValid || !isEmailValid || !isMessageValid) return;
-
-            setLoading(true);
-
-            try {
-                const formData = new FormData();
-                formData.append('access_key', FORM_ACCESS_KEY);
-                formData.append('name', nameVal);
-                formData.append('email', emailVal);
-                formData.append('message', messageVal);
-                formData.append('subject', 'New message from your portfolio');
-                formData.append('from_name', 'Portfolio Contact');
-                formData.append('redirect', FORM_REDIRECT_URL);
-                // Honeypot field
-                formData.append('botcheck', '');
-
-                const response = await fetch('https://api.web3forms.com/submit', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showSuccess();
-                } else {
-                    throw new Error(data.message || 'Submission failed');
-                }
-            } catch (err) {
-                console.error('Form submission error:', err);
-                showError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        });
-    }
-
-    // ============================================
     // 3D Tilt Effect on Project Cards (with performance optimization)
     // ============================================
     const projectCards = document.querySelectorAll('.project-card');
@@ -346,12 +197,5 @@
             }
         `;
         document.head.appendChild(style);
-    }
-
-    // ============================================
-    // Logging (optional, remove in production)
-    // ============================================
-    if (process.env.NODE_ENV !== 'production') {
-        console.log('Portfolio initialized successfully');
     }
 })();
